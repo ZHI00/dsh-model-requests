@@ -28,7 +28,9 @@ window.__ModuleLoader__.load({
         'col.time.hint': 'Step 开始时间（本地时区），悬停查看完整日期',
         'col.model': '模型',
         'col.throughput': '吞吐量',
-        'col.throughput.hint': '输出 token ÷（消息完成时间 − 首 token 时间），与 Harness 内置统计口径一致',
+        'col.throughput.hint': '输出 token ÷（消息完成 − 首 token），不含首字等待；与内置输出速度一致',
+        'col.e2e': '端到端',
+        'col.e2e.hint': '输出 token ÷（消息完成 − Step 开始），包含首字等待',
         'col.ttft': '首 token',
         'col.ttft.hint': '从 Step 开始到首个非空 token，包含请求准备时间；与内置统计口径一致',
         'throughput.short': '解码窗口或输出样本过短（< 200 ms 或 < 8 token），不计算吞吐量',
@@ -43,6 +45,7 @@ window.__ModuleLoader__.load({
         'chip.requests': '请求',
         'chip.running': '进行中',
         'chip.avgThroughput': '平均吞吐',
+        'chip.avgEndToEnd': '平均端到端',
         'chip.output': '输出',
         'chip.errors': '失败',
         'section.timing': '用时',
@@ -57,7 +60,8 @@ window.__ModuleLoader__.load({
         'detail.duration': '总耗时',
         'detail.ttft': '首 token 延迟',
         'detail.decode': '解码耗时',
-        'detail.throughput': '吞吐量',
+        'detail.throughput.decode': '解码吞吐量',
+        'detail.throughput.total': '端到端吞吐量',
         'detail.turnStep': '轮次 / 步',
         'detail.seq': '事件序号',
         'detail.purpose': '类型',
@@ -73,7 +77,7 @@ window.__ModuleLoader__.load({
         'detail.retryValue': '{count} 次，间隔 {delay}',
         'detail.error': '错误',
         'detail.none': '—',
-        'detail.note': '吞吐量 = 输出 token ÷（消息完成时间 − 首 token 时间），与内置输出速度口径一致。',
+        'detail.note': '解码吞吐量 = 输出 token ÷（消息完成 − 首 token），不含首字等待；端到端吞吐量 = 输出 token ÷（消息完成 − Step 开始），包含首字等待。',
         'detail.note.retry': '该请求发生过重试，吞吐量分母包含重试等待，数值会偏低。',
         'unit.tps': '{value} tok/s',
         'unit.seconds': '{value} s',
@@ -94,7 +98,9 @@ window.__ModuleLoader__.load({
         'col.time.hint': 'Step start time in your local timezone; hover for the full date',
         'col.model': 'Model',
         'col.throughput': 'Throughput',
-        'col.throughput.hint': 'Output tokens ÷ (message commit time − first token time); the same definition as the built-in statistics',
+        'col.throughput.hint': 'Output tokens ÷ (message commit − first token); excludes TTFT, matching the built-in output speed',
+        'col.e2e': 'End-to-end',
+        'col.e2e.hint': 'Output tokens ÷ (message commit − Step start); includes TTFT',
         'col.ttft': 'TTFT',
         'col.ttft.hint': 'From Step start to the first non-empty token, including request preparation; matches the built-in statistics',
         'throughput.short': 'Decode window or output sample too short (< 200 ms or < 8 tokens) to measure throughput',
@@ -109,6 +115,7 @@ window.__ModuleLoader__.load({
         'chip.requests': 'Requests',
         'chip.running': 'Running',
         'chip.avgThroughput': 'Avg throughput',
+        'chip.avgEndToEnd': 'Avg end-to-end',
         'chip.output': 'Output',
         'chip.errors': 'Failed',
         'section.timing': 'Timing',
@@ -123,7 +130,8 @@ window.__ModuleLoader__.load({
         'detail.duration': 'Duration',
         'detail.ttft': 'First token',
         'detail.decode': 'Decode time',
-        'detail.throughput': 'Throughput',
+        'detail.throughput.decode': 'Decode throughput',
+        'detail.throughput.total': 'End-to-end throughput',
         'detail.turnStep': 'Turn / step',
         'detail.seq': 'Event seq',
         'detail.purpose': 'Kind',
@@ -139,7 +147,7 @@ window.__ModuleLoader__.load({
         'detail.retryValue': '{count} times, {delay} apart',
         'detail.error': 'Error',
         'detail.none': '—',
-        'detail.note': '吞吐量 = 输出 token ÷（消息完成时间 − 首 token 时间），与内置输出速度口径一致。',
+        'detail.note': '解码吞吐量 = 输出 token ÷（消息完成 − 首 token），不含首字等待；端到端吞吐量 = 输出 token ÷（消息完成 − Step 开始），包含首字等待。',
         'detail.note.retry': '该请求发生过重试，吞吐量分母包含重试等待，数值会偏低。',
         'unit.tps': '{value} tok/s',
         'unit.seconds': '{value} s',
@@ -175,7 +183,7 @@ window.__ModuleLoader__.load({
 .mr-chip[data-tone="running"] b{color:var(--dsw-alias-brand-primary)}
 .mr-chip[data-tone="error"] b{color:var(--dsw-alias-state-error-primary)}
 .mr-scroll{flex:none;min-height:0;padding:0 16px 16px;box-sizing:border-box;container-type:inline-size}
-.mr-thead,.mr-row{display:grid;grid-template-columns:44px 74px minmax(0,1.5fr) 92px 84px 84px minmax(0,.9fr) 76px;gap:10px;align-items:center}
+.mr-thead,.mr-row{display:grid;grid-template-columns:40px 70px minmax(0,1.5fr) 88px 88px 80px 80px minmax(0,.9fr) 72px;gap:10px;align-items:center}
 .mr-thead{position:sticky;top:0;z-index:2;background:var(--dsw-alias-bg-layer-1);padding:8px 10px 6px;border-bottom:1px solid var(--dsw-alias-border-l1);font-size:10.5px;color:var(--dsw-alias-label-tertiary,var(--dsw-alias-label-secondary));letter-spacing:.02em}
 .mr-thead span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mr-list{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}
@@ -218,13 +226,21 @@ window.__ModuleLoader__.load({
 .mr-more:hover:not([disabled]){color:var(--dsw-alias-label-primary);border-color:var(--dsw-alias-border-l2)}
 .mr-more:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:1px}
 .mr-more[disabled]{opacity:.6;cursor:default}
-@container (max-width:860px){
-.mr-thead,.mr-row{grid-template-columns:38px 68px minmax(0,1.4fr) 82px 78px 76px 70px}
+@container (max-width:880px){
+.mr-thead,.mr-row{grid-template-columns:38px 70px minmax(0,1.4fr) 88px 88px 80px 80px 72px}
 .mr-col-tokens{display:none}
 }
-@container (max-width:620px){
-.mr-thead,.mr-row{grid-template-columns:32px 64px minmax(0,1fr) 76px 72px 64px}
+@container (max-width:720px){
+.mr-thead,.mr-row{grid-template-columns:38px 66px minmax(0,1.4fr) 86px 86px 80px 70px}
 .mr-col-ttft{display:none}
+}
+@container (max-width:600px){
+.mr-thead,.mr-row{grid-template-columns:34px 64px minmax(0,1fr) 84px 84px 68px}
+.mr-col-duration{display:none}
+}
+@container (max-width:480px){
+.mr-thead,.mr-row{grid-template-columns:32px minmax(0,1fr) 84px 84px 64px}
+.mr-col-time{display:none}
 }
 `;
 
@@ -321,6 +337,17 @@ window.__ModuleLoader__.load({
           throughputNote = 'throughput.short';
         }
       }
+      const e2eWindowMs = startedAt !== null && completedAt !== null ? Math.max(0, completedAt - startedAt) : null;
+      let e2eTps = null;
+      let e2eNote = 'throughput.missing';
+      if (e2eWindowMs !== null && outputTokens !== null) {
+        if (e2eWindowMs >= MEASURABLE_DECODE_MS && outputTokens >= MEASURABLE_TOKENS) {
+          e2eTps = outputTokens / (e2eWindowMs / 1000);
+          e2eNote = 'col.e2e.hint';
+        } else {
+          e2eNote = 'throughput.short';
+        }
+      }
       return {
         key: String(request.startSeq ?? number),
         number,
@@ -339,6 +366,9 @@ window.__ModuleLoader__.load({
         decodeMs,
         decodeTps,
         throughputNote,
+        e2eTps,
+        e2eNote,
+        e2eWindowMs,
         inputTokens,
         outputTokens,
         totalTokens,
@@ -386,6 +416,8 @@ window.__ModuleLoader__.load({
       let output = null;
       let decodeTokens = null;
       let decodeMs = null;
+      let e2eTokens = null;
+      let e2eMs = null;
       for (const row of rows) {
         if (row.running) running += 1;
         if (row.status === 'error') errors += 1;
@@ -394,9 +426,23 @@ window.__ModuleLoader__.load({
           decodeTokens = (decodeTokens ?? 0) + row.outputTokens;
           decodeMs = (decodeMs ?? 0) + row.decodeMs;
         }
+        if (row.e2eTps !== null && row.outputTokens !== null && row.e2eWindowMs !== null) {
+          e2eTokens = (e2eTokens ?? 0) + row.outputTokens;
+          e2eMs = (e2eMs ?? 0) + row.e2eWindowMs;
+        }
       }
       const averageTps = decodeTokens !== null && decodeMs !== null && decodeMs > 0 ? decodeTokens / (decodeMs / 1000) : null;
-      return { total: rows.length, running, errors, output, averageTps, averageLabel: formatSpeed(t, averageTps) };
+      const averageE2e = e2eTokens !== null && e2eMs !== null && e2eMs > 0 ? e2eTokens / (e2eMs / 1000) : null;
+      return {
+        total: rows.length,
+        running,
+        errors,
+        output,
+        averageTps,
+        averageLabel: formatSpeed(t, averageTps),
+        averageE2e,
+        averageE2eLabel: formatSpeed(t, averageE2e)
+      };
     }
 
     function Chip({ label, value, tone }) {
@@ -427,7 +473,8 @@ window.__ModuleLoader__.load({
           h(Field, { label: t('detail.duration'), value: formatDuration(t, row.durationMs) }),
           h(Field, { label: t('detail.ttft'), value: formatDuration(t, row.ttftMs) }),
           h(Field, { label: t('detail.decode'), value: formatDuration(t, row.decodeMs) }),
-          h(Field, { label: t('detail.throughput'), value: formatSpeed(t, row.decodeTps) })
+          h(Field, { label: t('detail.throughput.decode'), value: formatSpeed(t, row.decodeTps) }),
+          h(Field, { label: t('detail.throughput.total'), value: formatSpeed(t, row.e2eTps) })
         ),
         h(Section, { title: t('section.usage') },
           h(Field, { label: t('detail.input'), value: tokens(row.inputTokens) }),
@@ -474,6 +521,7 @@ window.__ModuleLoader__.load({
       const provider = row.provider ?? t('detail.none');
       const stamp = stampTime(row.startedAt, Date.now());
       const throughput = formatSpeed(t, row.decodeTps);
+      const endToEnd = formatSpeed(t, row.e2eTps);
       const ttft = formatDuration(t, row.ttftMs);
       const duration = formatDuration(t, row.durationMs);
       const tokens = row.inputTokens === null && row.outputTokens === null
@@ -499,6 +547,7 @@ window.__ModuleLoader__.load({
             )
           ),
           h('span', { className: 'mr-metric mr-col-throughput', 'data-empty': throughput === null ? '1' : '0', title: t(row.throughputNote) }, throughput ?? '—'),
+          h('span', { className: 'mr-metric mr-col-e2e', 'data-empty': endToEnd === null ? '1' : '0', title: t(row.e2eNote) }, endToEnd ?? '—'),
           h('span', { className: 'mr-metric mr-col-ttft', 'data-empty': ttft === null ? '1' : '0' }, ttft ?? '—'),
           h('span', { className: 'mr-metric mr-col-duration', 'data-empty': duration === null ? '1' : '0' }, duration ?? '—'),
           h('span', { className: 'mr-metric mr-col-tokens', 'data-empty': tokens === null ? '1' : '0' }, tokens ?? '—'),
@@ -590,6 +639,9 @@ window.__ModuleLoader__.load({
             summary.averageLabel !== null
               ? h(Chip, { label: t('chip.avgThroughput'), value: summary.averageLabel })
               : null,
+            summary.averageE2eLabel !== null
+              ? h(Chip, { label: t('chip.avgEndToEnd'), value: summary.averageE2eLabel })
+              : null,
             summary.output !== null
               ? h(Chip, { label: t('chip.output'), value: compactNumber(summary.output) })
               : null,
@@ -605,6 +657,7 @@ window.__ModuleLoader__.load({
                   h('span', { className: 'mr-col-time', title: t('col.time.hint') }, t('col.time')),
                   h('span', null, t('col.model')),
                   h('span', { className: 'mr-col-throughput', title: t('col.throughput.hint') }, t('col.throughput')),
+                  h('span', { className: 'mr-col-e2e', title: t('col.e2e.hint') }, t('col.e2e')),
                   h('span', { className: 'mr-col-ttft', title: t('col.ttft.hint') }, t('col.ttft')),
                   h('span', { className: 'mr-col-duration' }, t('col.duration')),
                   h('span', { className: 'mr-col-tokens' }, t('col.tokens')),

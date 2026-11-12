@@ -8,8 +8,8 @@ It registers a `conversation.view` entry right after **Trajectory**, so the tab 
 
 ## Features
 
-- **Request ledger** — one row per model call: index, start time, model (with provider), decode throughput, TTFT, wall time, input/output tokens, status.
-- **Click for details** — timing (start, duration, TTFT, decode time, throughput), token usage (input, output, cache read/write, reasoning, total) and request controls (provider, model, reasoning effort, temperature, max output, turn/step, event seq). Failed requests show the error code and message; retried requests are called out.
+- **Request ledger** — one row per model call: index, start time, model (with provider), decode throughput, end-to-end throughput, TTFT, wall time, input/output tokens, status.
+- **Click for details** — timing (start, duration, TTFT, decode time, decode and end-to-end throughput), token usage (input, output, cache read/write, reasoning, total) and request controls (provider, model, reasoning effort, temperature, max output, turn/step, event seq). Failed requests show the error code and message; retried requests are called out.
 - **Pinned table header** — column names stay visible while the conversation scrolls.
 - **Starts at the top** — switching to Requests aligns the ledger with its first row instead of inheriting Chat's tail position.
 - **Live** — running requests carry a pulsing status dot and their elapsed time ticks once per second.
@@ -44,14 +44,15 @@ The view reads the same snapshot Trajectory publishes through the `useTrajectory
 | Field | Definition |
 | --- | --- |
 | Time | Step start time in the local timezone; today shows `HH:MM:SS`, other days `MM-DD HH:MM` (full timestamp on hover) |
-| Throughput | `outputTokens ÷ (assistant/message time − first non-empty token time)` |
+| Decode throughput | `outputTokens ÷ (assistant/message time − first non-empty token time)`, excluding TTFT |
+| End-to-end throughput | `outputTokens ÷ (assistant/message time − step/start time)`, including TTFT |
 | TTFT | `first non-empty token time − step/start time` |
 | Duration | `assistant/message time − step/start time` |
 | Tokens | Provider-reported `usage` (input, output, cache read/write, reasoning) |
 
 ### Accuracy notes
 
-- The throughput formula is **identical to the built-in `sessionStats` output speed** (the reading under the composer). Its end point is the message commit time, which includes the provider's final `usage`/`finish` chunks and commit overhead, so it is slightly **lower** than a token-to-token generation rate.
+- **Decode throughput** is identical to the built-in `sessionStats` output speed (the reading under the composer). Its end point is the message commit time, which includes the provider's final `usage`/`finish` chunks and commit overhead, so it is slightly **lower** than a token-to-token generation rate. **End-to-end throughput** keeps the same numerator but starts at the Step, so it also includes TTFT and request preparation. Across one real session (181 responses) they read **146.1** vs **79.4 tok/s**, because TTFT averaged about 4.9 s.
 - Verified against a real session log (124 responses, 101,606 output tokens): this window reports **146.6 tok/s** vs **156.8 tok/s** for the token-to-token window, about 6–7% conservative overall. Per response, long replies (decode >= 1 s) read ~10% lower and short replies (< 1 s) ~29% lower, because the fixed finalization tail weighs more there.
 - Provider chunk batching can compress token timestamps into a few milliseconds; a few very short tool-call responses would otherwise show 1,000–25,000 tok/s. The view therefore **omits throughput** when the decode window is < 200 ms or the output is < 8 tokens, and the average only uses measurable samples. The built-in statistics do not apply this filter.
 - TTFT follows the same definition as the built-in statistics and Trajectory: it starts at `step/start`, so it includes request preparation and is not a pure network first-byte latency.
