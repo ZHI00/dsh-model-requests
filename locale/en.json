@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Model requests",
+    "description": "Adds a Requests tab after Trajectory: every model call with its model, throughput, TTFT, duration, and token usage, with full details one click away."
+  }
+}

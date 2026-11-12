@@ -1,0 +1,8 @@
+# dsh-model-requests bundle patch
+#
+# Mounts the empty host half as a profile loader row. The client module system
+# discovers this row, reads package.json's `dsh.client`, and serves client.js as
+# a browser bundle; the tab itself is registered from that Client module.
+- insert:
+    - id: model-requests
+      name: 'dsh-model-requests'

@@ -1,0 +1,57 @@
+{
+  "name": "dsh-model-requests",
+  "version": "1.0.0",
+  "description": "Requests tab for DeepSeek Harness: per-request model, throughput, TTFT and token usage, with details one click away.",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "README.zh.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "plugin",
+    "llm",
+    "observability",
+    "throughput",
+    "tokens"
+  ],
+  "author": "ZHI00",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZHI00/dsh-model-requests.git"
+  },
+  "homepage": "https://github.com/ZHI00/dsh-model-requests#readme",
+  "bugs": {
+    "url": "https://github.com/ZHI00/dsh-model-requests/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  }
+}
