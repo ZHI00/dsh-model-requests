@@ -24,6 +24,8 @@ window.__ModuleLoader__.load({
         'view.label': '请求',
         'title': '模型请求',
         'subtitle': '每次模型调用的模型、速度与用量',
+        'col.time': '时间',
+        'col.time.hint': 'Step 开始时间（本地时区），悬停查看完整日期',
         'col.model': '模型',
         'col.throughput': '吞吐量',
         'col.throughput.hint': '输出 token ÷（消息完成时间 − 首 token 时间），与 Harness 内置统计口径一致',
@@ -88,6 +90,8 @@ window.__ModuleLoader__.load({
         'view.label': 'Requests',
         'title': 'Model requests',
         'subtitle': 'Model, speed, and usage for each model call',
+        'col.time': 'Time',
+        'col.time.hint': 'Step start time in your local timezone; hover for the full date',
         'col.model': 'Model',
         'col.throughput': 'Throughput',
         'col.throughput.hint': 'Output tokens ÷ (message commit time − first token time); the same definition as the built-in statistics',
@@ -171,7 +175,7 @@ window.__ModuleLoader__.load({
 .mr-chip[data-tone="running"] b{color:var(--dsw-alias-brand-primary)}
 .mr-chip[data-tone="error"] b{color:var(--dsw-alias-state-error-primary)}
 .mr-scroll{flex:none;min-height:0;padding:0 16px 16px;box-sizing:border-box;container-type:inline-size}
-.mr-thead,.mr-row{display:grid;grid-template-columns:44px minmax(0,1.5fr) 92px 84px 84px minmax(0,.9fr) 76px;gap:10px;align-items:center}
+.mr-thead,.mr-row{display:grid;grid-template-columns:44px 74px minmax(0,1.5fr) 92px 84px 84px minmax(0,.9fr) 76px;gap:10px;align-items:center}
 .mr-thead{position:sticky;top:0;z-index:2;background:var(--dsw-alias-bg-layer-1);padding:8px 10px 6px;border-bottom:1px solid var(--dsw-alias-border-l1);font-size:10.5px;color:var(--dsw-alias-label-tertiary,var(--dsw-alias-label-secondary));letter-spacing:.02em}
 .mr-thead span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mr-list{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}
@@ -182,6 +186,8 @@ window.__ModuleLoader__.load({
 .mr-row:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-1px}
 .mr-item[data-open="1"] .mr-row:hover{background:var(--dsw-alias-bg-layer-2)}
 .mr-num{font-size:11px;color:var(--dsw-alias-label-tertiary,var(--dsw-alias-label-secondary));font-variant-numeric:tabular-nums;white-space:nowrap}
+.mr-time{min-width:0;font-size:11px;color:var(--dsw-alias-label-secondary);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mr-time[data-empty="1"]{color:var(--dsw-alias-label-tertiary,var(--dsw-alias-label-secondary))}
 .mr-model{min-width:0;display:flex;flex-direction:column;gap:1px}
 .mr-model b{min-width:0;font-weight:600;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mr-model span{min-width:0;font-size:10.5px;color:var(--dsw-alias-label-tertiary,var(--dsw-alias-label-secondary));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -212,12 +218,12 @@ window.__ModuleLoader__.load({
 .mr-more:hover:not([disabled]){color:var(--dsw-alias-label-primary);border-color:var(--dsw-alias-border-l2)}
 .mr-more:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:1px}
 .mr-more[disabled]{opacity:.6;cursor:default}
-@container (max-width:700px){
-.mr-thead,.mr-row{grid-template-columns:38px minmax(0,1.4fr) 82px 78px 76px 70px}
+@container (max-width:860px){
+.mr-thead,.mr-row{grid-template-columns:38px 68px minmax(0,1.4fr) 82px 78px 76px 70px}
 .mr-col-tokens{display:none}
 }
-@container (max-width:520px){
-.mr-thead,.mr-row{grid-template-columns:32px minmax(0,1fr) 76px 72px 64px}
+@container (max-width:620px){
+.mr-thead,.mr-row{grid-template-columns:32px 64px minmax(0,1fr) 76px 72px 64px}
 .mr-col-ttft{display:none}
 }
 `;
@@ -241,11 +247,26 @@ window.__ModuleLoader__.load({
       return String(Math.round(value));
     }
 
-    function clockTime(timestamp) {
+    function pad2(value) {
+      return String(value).padStart(2, '0');
+    }
+
+    function stampFull(timestamp) {
       if (timestamp === null) return null;
       const date = new Date(timestamp);
-      const pad = (value) => String(value).padStart(2, '0');
-      return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+      return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())}`;
+    }
+
+    /** Today shows the clock; other days keep the date so long sessions stay unambiguous. */
+    function stampTime(timestamp, reference) {
+      if (timestamp === null) return null;
+      const date = new Date(timestamp);
+      const now = new Date(reference);
+      const sameDay = date.getFullYear() === now.getFullYear()
+        && date.getMonth() === now.getMonth()
+        && date.getDate() === now.getDate();
+      if (sameDay) return `${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())}`;
+      return `${pad2(date.getMonth() + 1)}-${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
     }
 
     function formatDuration(t, milliseconds) {
@@ -402,7 +423,7 @@ window.__ModuleLoader__.load({
       const retryDelay = row.retryDelayMs === null ? null : formatDuration(t, row.retryDelayMs);
       return h('div', { className: 'mr-detail' },
         h(Section, { title: t('section.timing') },
-          h(Field, { label: t('detail.started'), value: clockTime(row.startedAt) }),
+          h(Field, { label: t('detail.started'), value: stampFull(row.startedAt) }),
           h(Field, { label: t('detail.duration'), value: formatDuration(t, row.durationMs) }),
           h(Field, { label: t('detail.ttft'), value: formatDuration(t, row.ttftMs) }),
           h(Field, { label: t('detail.decode'), value: formatDuration(t, row.decodeMs) }),
@@ -451,6 +472,7 @@ window.__ModuleLoader__.load({
     function RequestItem({ row, open, onToggle, t }) {
       const model = row.model ?? t('detail.none');
       const provider = row.provider ?? t('detail.none');
+      const stamp = stampTime(row.startedAt, Date.now());
       const throughput = formatSpeed(t, row.decodeTps);
       const ttft = formatDuration(t, row.ttftMs);
       const duration = formatDuration(t, row.durationMs);
@@ -465,6 +487,11 @@ window.__ModuleLoader__.load({
           onClick: () => onToggle(row.key)
         },
           h('span', { className: 'mr-num' }, `#${row.number}`),
+          h('span', {
+            className: 'mr-time mr-col-time',
+            'data-empty': stamp === null ? '1' : '0',
+            title: stampFull(row.startedAt) ?? undefined
+          }, stamp ?? '—'),
           h('span', { className: 'mr-model' },
             h('b', { title: row.model ?? '' }, model),
             h('span', { title: row.provider ?? '' },
@@ -549,6 +576,7 @@ window.__ModuleLoader__.load({
             : h(Fragment, null,
                 h('div', { className: 'mr-thead' },
                   h('span', null, '#'),
+                  h('span', { className: 'mr-col-time', title: t('col.time.hint') }, t('col.time')),
                   h('span', null, t('col.model')),
                   h('span', { className: 'mr-col-throughput', title: t('col.throughput.hint') }, t('col.throughput')),
                   h('span', { className: 'mr-col-ttft', title: t('col.ttft.hint') }, t('col.ttft')),

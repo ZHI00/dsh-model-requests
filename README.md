@@ -8,7 +8,7 @@ It registers a `conversation.view` entry right after **Trajectory**, so the tab 
 
 ## Features
 
-- **Request ledger** — one row per model call: index, model (with provider), decode throughput, TTFT, wall time, input/output tokens, status.
+- **Request ledger** — one row per model call: index, start time, model (with provider), decode throughput, TTFT, wall time, input/output tokens, status.
 - **Click for details** — timing (start, duration, TTFT, decode time, throughput), token usage (input, output, cache read/write, reasoning, total) and request controls (provider, model, reasoning effort, temperature, max output, turn/step, event seq). Failed requests show the error code and message; retried requests are called out.
 - **Pinned table header** — column names stay visible while the conversation scrolls.
 - **Live** — running requests carry a pulsing status dot and their elapsed time ticks once per second.
@@ -42,6 +42,7 @@ The view reads the same snapshot Trajectory publishes through the `useTrajectory
 
 | Field | Definition |
 | --- | --- |
+| Time | Step start time in the local timezone; today shows `HH:MM:SS`, other days `MM-DD HH:MM` (full timestamp on hover) |
 | Throughput | `outputTokens ÷ (assistant/message time − first non-empty token time)` |
 | TTFT | `first non-empty token time − step/start time` |
 | Duration | `assistant/message time − step/start time` |
