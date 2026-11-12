@@ -15,7 +15,7 @@ window.__ModuleLoader__.load({
   factory(require) {
     const React = require('react');
     const h = React.createElement;
-    const { Fragment, useCallback, useEffect, useMemo, useState } = React;
+    const { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } = React;
 
     const NS = 'model-requests';
 
@@ -539,6 +539,32 @@ window.__ModuleLoader__.load({
         return () => clearInterval(timer);
       }, [live]);
 
+      // The conversation scroll body keeps Chat's tail position when the View
+      // changes; align this ledger with the top of its own content instead.
+      const rootRef = useRef(null);
+      useLayoutEffect(() => {
+        const root = rootRef.current;
+        if (root === null) return undefined;
+        const toTop = () => {
+          let node = root.parentElement;
+          while (node !== null) {
+            const style = window.getComputedStyle(node);
+            if ((style.overflowY === 'auto' || style.overflowY === 'scroll') && node.scrollHeight > node.clientHeight) {
+              node.scrollTop = 0;
+              return;
+            }
+            node = node.parentElement;
+          }
+        };
+        toTop();
+        const frame = requestAnimationFrame(toTop);
+        const timer = setTimeout(toTop, 80);
+        return () => {
+          cancelAnimationFrame(frame);
+          clearTimeout(timer);
+        };
+      }, [props.sessionId]);
+
       const rows = useMemo(() => (available ? buildRows(snapshot, now) : []), [available, snapshot, now]);
       const summary = useMemo(() => summarize(t, rows), [rows, t]);
 
@@ -548,10 +574,10 @@ window.__ModuleLoader__.load({
       }, []);
 
       if (!available) {
-        return h('div', { className: 'mr-root' }, h('style', null, CSS), h(EmptyState, { t, unavailable: true }));
+        return h('div', { className: 'mr-root', ref: rootRef }, h('style', null, CSS), h(EmptyState, { t, unavailable: true }));
       }
 
-      return h('div', { className: 'mr-root' },
+      return h('div', { className: 'mr-root', ref: rootRef },
         h('style', null, CSS),
         h('div', { className: 'mr-head' },
           h('div', { className: 'mr-title-row' },

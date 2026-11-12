@@ -1,6 +1,6 @@
 {
   "name": "dsh-model-requests",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Requests tab for DeepSeek Harness: per-request model, throughput, TTFT and token usage, with details one click away.",
   "type": "module",
   "main": "index.js",

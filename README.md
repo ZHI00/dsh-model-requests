@@ -11,6 +11,7 @@ It registers a `conversation.view` entry right after **Trajectory**, so the tab 
 - **Request ledger** — one row per model call: index, start time, model (with provider), decode throughput, TTFT, wall time, input/output tokens, status.
 - **Click for details** — timing (start, duration, TTFT, decode time, throughput), token usage (input, output, cache read/write, reasoning, total) and request controls (provider, model, reasoning effort, temperature, max output, turn/step, event seq). Failed requests show the error code and message; retried requests are called out.
 - **Pinned table header** — column names stay visible while the conversation scrolls.
+- **Starts at the top** — switching to Requests aligns the ledger with its first row instead of inheriting Chat's tail position.
 - **Live** — running requests carry a pulsing status dot and their elapsed time ticks once per second.
 - **Native look** — only `--dsw-alias-*` theme tokens, light/dark aware, localized in English and Chinese, responsive via container queries (secondary columns fold away in narrow panes).
 - **No extra requests** — the view projects the Trajectory snapshot the Conversation shell already assembles.
